@@ -1,0 +1,18 @@
+[
+  {
+    "role": "user",
+    "content": "Hi, what does this project do?"
+  },
+  {
+    "role": "assistant",
+    "content": "It is a terminal AI chat app built with Bun, the AI SDK, and OpenRouter. It streams responses, keeps chat history locally, and is meant as a base for features like multiple sessions and model switching."
+  },
+  {
+    "role": "user",
+    "content": "How do I set it up?"
+  },
+  {
+    "role": "assistant",
+    "content": "Install dependencies, copy .env.example to .env, add your OpenRouter API key, and run bun run chat.ts."
+  }
+]
