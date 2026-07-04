@@ -40,12 +40,6 @@ Start the chat app:
 bun run chat.ts
 ```
 
-Run the one-off test request:
-
-```bash
-bun run test-request.ts
-```
-
 ## Project files
 
 - [chat.ts](chat.ts) contains the terminal chat loop, streaming output, and chat history persistence.
