@@ -1,62 +1,52 @@
 # terminal-ai-chat
 
-A small terminal-based AI chat app built with Bun, the AI SDK, and OpenRouter.
+A terminal-based AI chat app with persistent, multi-session history backed by SQLite. Built with Bun, the Vercel AI SDK, and OpenRouter — streaming responses, session management, and per-message token/cost tracking.
 
-It supports streaming responses in the terminal, simple chat memory, and a clean starting point for features like multiple sessions, `/model`, `/help`, and usage tracking.
+Session storage was migrated from a flat JSON file to a proper SQLite database (WAL mode, Drizzle ORM) for durability and multi-session support.
 
-## What it uses
+## Stack
 
-- Bun runtime
-- AI SDK
-- OpenRouter as the model provider
-- `chalk` for terminal styling
-- `dotenv` for local environment variables
+Bun · Vercel AI SDK v7 · OpenRouter · Chalk · Drizzle ORM · SQLite (WAL mode) 
 
 ## Setup
 
-1. Install dependencies:
-
 ```bash
 bun install
+cp .env.example .env   # add your OPENROUTER_API_KEY (get one at openrouter.ai)
 ```
 
-2. Create your local env file:
+The database (`chat.db`) is created automatically on first run.
+
+## Usage
 
 ```bash
-copy .env.example .env
+bun run chat.ts             # start a new session
+bun run chat.ts continue    # resume the most recent session
+bun run chat.ts use <id>    # resume a specific session by id
+bun run chat.ts sessions    # list recent sessions
 ```
 
-3. Add your OpenRouter API key to `.env`:
+Type `exit` to quit. The first message in a new session is used to auto-generate a short session title.
 
-```bash
-OPENROUTER_API_KEY=your_key_here
-```
+## Project Structure
 
-## Run
+- `chat.ts` — terminal chat loop, session handling, streaming output
+- `provider.ts` — OpenRouter client setup
+- `db/`
+  - `index.ts` — SQLite connection (WAL mode, foreign keys, Drizzle setup)
+  - `schema.ts` — `sessions` and `messages` table definitions
+  - `queries.ts` — session/message CRUD + startup recovery
+- `drizzle.config.ts` — Drizzle Kit config
 
-Start the chat app:
-
-```bash
-bun run chat.ts
-```
-
-## Project files
-
-- [chat.ts](chat.ts) contains the terminal chat loop, streaming output, and chat history persistence.
-- [provider.ts](provider.ts) loads the OpenRouter client from the environment.
-- [chat-history.json](chat-history.json) is the local sample history file used by the app.
-- [.env.example](.env.example) shows the required environment variable without exposing secrets.
+Sessions and messages are persisted in SQLite rather than a flat file — each session tracks an id, title, and timestamps, and each message tracks its role, content, token usage, cost, and status (`pending` / `complete` / `interrupted`), so history survives restarts and crashes cleanly.
 
 ## Notes
 
-- If you want a fresh conversation, delete `chat-history.json` or use the `reset` command inside the app.
-- Markdown rendering is intentionally avoided during streaming for now, because raw chunk output keeps the typing effect smooth.
+- `chat-history.json` is a leftover from the old JSON-based version and is no longer used by the app 
 
-## Future updates
+## Future Updates
 
-- Typing indicator such as `AI is thinking...`
-- Token and cost display from OpenRouter usage data
-- `/model` switching
-- Multiple chat sessions
-- Better error handling
-- `/help` command
+- [ ] `/model` switching
+- [ ] Conversation search
+- [ ] Better error handling around interrupted streams
+- [ ] Terminal UI overhaul with [Ink](https://github.com/vadimdemedes/ink)

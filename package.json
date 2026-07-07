@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.31.10"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -12,7 +13,9 @@
   "dependencies": {
     "@openrouter/ai-sdk-provider": "^2.10.0",
     "ai": "^7.0.14",
+    "better-sqlite3": "^12.11.1",
     "chalk": "^5.6.2",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2"
   }
 }
