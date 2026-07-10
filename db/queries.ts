@@ -70,4 +70,4 @@ export function markOrphanedInterrupted() {
     .set({ status: "interrupted" })
     .where(isNull(messages.completedAt))
     .run();
-} 
+}
