@@ -14,8 +14,28 @@ import { generateSessionTitle } from "./title";
 
 const SYSTEM_PROMPT = "You are a helpful, concise terminal assistant.";
 
+process.on("uncaughtException", (err) => {
+  console.log(chalk.red(`\n[Fatal error: ${err.message}]\n`));
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.log(chalk.red(`\n[Unhandled rejection: ${reason instanceof Error ? reason.message : String(reason)}]\n`));
+});
+
 async function main() {
-  markOrphanedInterrupted();
+
+  if (!process.env.OPENROUTER_API_KEY) {
+    console.log(chalk.red("\nMissing OPENROUTER_API_KEY in .env — add your OpenRouter key and try again.\n"));
+    process.exit(1);
+  }
+  
+  try {
+    markOrphanedInterrupted();
+  } catch (err) {
+    console.log(chalk.red(`\nDatabase error on startup: ${err instanceof Error ? err.message : String(err)}\n`));
+    process.exit(1);
+  }
 
   const args = process.argv.slice(2);
   let sessionId: string;
