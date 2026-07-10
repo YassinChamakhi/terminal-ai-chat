@@ -85,9 +85,6 @@ import {
   completeMessage,
   markOrphanedInterrupted,
 } from "./db/queries";
-import { db } from "./db";
-import { sessions } from "./db/schema";
-import { eq } from "drizzle-orm";
 
 const SYSTEM_PROMPT = "You are a helpful, concise terminal assistant.";
 
@@ -102,8 +99,7 @@ async function main() {
   if (args[0] === "continue") {
     const recent = listSessions(1);
     if (recent.length === 0) {
-      const name = prompt(chalk.cyan("Session name: ")) || "New session";
-      sessionId = createSession(name);
+      sessionId = createSession();
       isNewChat = true;
     } else {
       sessionId = recent[0].id;
@@ -141,8 +137,6 @@ async function main() {
     content: m.content,
   }));
 
-  let titleGenerated = false;
-
   while (true) {
     const userInput = prompt(chalk.green.bold("You: "));
     if (!userInput || userInput.trim().toLowerCase() === "exit") {
@@ -152,28 +146,6 @@ async function main() {
 
     addMessage(sessionId, "user", userInput);
     messages.push({ role: "user", content: userInput });
-
-    // Auto-generate title from first user message
-    if (isNewChat && !titleGenerated && userInput.length > 0) {
-      const titleMessages: ModelMessage[] = [
-        { role: "user", content: `Generate a short 2-3 word title for this conversation topic: "${userInput.slice(0, 100)}". Reply with ONLY the title, nothing else.` }
-      ];
-      
-      const titleResult = streamText({
-        model,
-        messages: titleMessages,
-      });
-
-      let generatedTitle = "";
-      for await (const chunk of titleResult.textStream) {
-        generatedTitle += chunk;
-      }
-      
-      if (generatedTitle.trim()) {
-        db.update(sessions).set({ title: generatedTitle.trim() }).where(eq(sessions.id, sessionId)).run();
-        titleGenerated = true;
-      }
-    }
 
     process.stdout.write(chalk.magenta.bold("AI: "));
 
@@ -193,7 +165,7 @@ async function main() {
     console.log("\n");
 
     const usage = await result.usage;
-    completeMessage(assistantMsgId, fullResponse, usage?.promptTokens, usage?.completionTokens)
+    completeMessage(assistantMsgId, usage?.promptTokens, usage?.completionTokens);
 
     messages.push({ role: "assistant", content: fullResponse });
   }
