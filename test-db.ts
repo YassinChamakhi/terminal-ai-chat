@@ -13,7 +13,7 @@ const assistantMsgId = addMessage(sessionId, "assistant", "Hi! This is a test re
 console.log("Assistant message added (should be pending):", assistantMsgId);
 
 console.log("\n--- Completing the assistant message ---");
-completeMessage(assistantMsgId, 12, 8, 0.0002);
+completeMessage(assistantMsgId, "Hi! This is a test reply", 12, 8, 200);
 console.log("Marked as complete with token/cost data");
 
 console.log("\n--- Fetching all messages in this session ---");

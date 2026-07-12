@@ -5,7 +5,7 @@ CREATE TABLE `messages` (
 	`content` text NOT NULL,
 	`input_tokens` integer,
 	`output_tokens` integer,
-	`cost` real,
+	`cost` integer,
 	`status` text DEFAULT 'complete' NOT NULL,
 	`completed_at` integer,
 	`created_at` integer DEFAULT 0 NOT NULL,

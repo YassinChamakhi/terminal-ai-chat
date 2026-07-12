@@ -5,4 +5,5 @@ export const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-export const model = openrouter("openai/gpt-4o-mini");
+export const MODEL_ID = "openai/gpt-4o-mini";
+export const model = openrouter(MODEL_ID);

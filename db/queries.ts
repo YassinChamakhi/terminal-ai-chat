@@ -47,12 +47,12 @@ export function addMessage(sessionId: string, role: string, content: string): st
     createdAt: Date.now(),
   }).run();
 
-  touchSession(sessionId);   // ← add this line
+  touchSession(sessionId);  
 
   return id;
 }
 
-export function completeMessage(messageId: string, content: string, inputTokens?: number, outputTokens?: number, cost?: number) {
+export function completeMessage(messageId: string, content: string, inputTokens?: number, outputTokens?: number, cost?: number, model?: string) {
   db.update(messages).set({
     content,
     status: "complete",
@@ -60,6 +60,7 @@ export function completeMessage(messageId: string, content: string, inputTokens?
     inputTokens,
     outputTokens,
     cost,
+    model,
   }).where(eq(messages.id, messageId)).run();
 }
 

@@ -1,5 +1,6 @@
 import { streamText, type ModelMessage } from "ai";
-import { model } from "./provider";
+import { model, MODEL_ID } from "./provider";
+import { getRate, calculateCostMicros, formatCostMicros } from "./pricing";
 import chalk from "chalk";
 import {
   createSession,
@@ -125,8 +126,21 @@ async function main() {
       }
       console.log("\n");
 
+      
+
       const usage = await result.usage;
-      completeMessage(assistantMsgId, fullResponse, usage?.inputTokens, usage?.outputTokens);
+      const inputTokens = usage?.inputTokens ?? 0;
+      const outputTokens = usage?.outputTokens ?? 0;
+
+      let costMicros: number | undefined;
+      const rate = await getRate(MODEL_ID);
+      const costLabel = rate
+        ? formatCostMicros((costMicros = calculateCostMicros(rate, inputTokens, outputTokens)))
+        : "cost unknown";
+
+      console.log(chalk.dim(` ↳ [${inputTokens} in / ${outputTokens} out · ${costLabel}]\n`));
+
+      completeMessage(assistantMsgId, fullResponse, inputTokens, outputTokens, costMicros, MODEL_ID);
       messages.push({ role: "assistant", content: fullResponse });
 
     } catch (err) {

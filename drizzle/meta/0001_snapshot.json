@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c3a7cecd-bb0c-42a2-a247-63952aa68cac",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "36e3a069-93a5-43b4-9276-6899ef07ca28",
+  "prevId": "c3a7cecd-bb0c-42a2-a247-63952aa68cac",
   "tables": {
     "messages": {
       "name": "messages",
@@ -52,6 +52,13 @@
         "cost": {
           "name": "cost",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "model": {
+          "name": "model",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
