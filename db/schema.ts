@@ -6,6 +6,9 @@ export const sessions = sqliteTable("sessions", {
   title: text("title"),
   createdAt: integer("created_at").notNull().default(0),
   updatedAt: integer("updated_at").notNull().default(0),
+  titleInputTokens: integer("title_input_tokens"),
+  titleOutputTokens: integer("title_output_tokens"),
+  titleCost: integer("title_cost"), // microdollars — see pricing.ts
 });
 
 export const messages = sqliteTable("messages", {

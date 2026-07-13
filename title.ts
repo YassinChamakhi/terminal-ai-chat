@@ -1,5 +1,6 @@
 import { streamText, type ModelMessage } from "ai";
 import { model } from "./provider";
+import { getRate, calculateCostMicros } from "./pricing";
 import { db } from "./db";
 import { sessions } from "./db/schema";
 import { eq } from "drizzle-orm";
@@ -19,10 +20,17 @@ export async function generateSessionTitle(sessionId: string, firstMessage: stri
 
     const cleanTitle = generatedTitle.trim().replace(/^["']|["']$/g, "").slice(0, 50);
 
-    if (cleanTitle) {
-      db.update(sessions).set({ title: cleanTitle }).where(eq(sessions.id, sessionId)).run();
-    }
+    const usage = await titleResult.usage;
+    const rate = usage ? await getRate("openai/gpt-4o-mini") : null; // current fixed model, until /model lands
+    const cost = rate && usage ? calculateCostMicros(rate, usage.inputTokens ?? 0, usage.outputTokens ?? 0) : undefined;
+
+    db.update(sessions).set({
+      ...(cleanTitle ? { title: cleanTitle } : {}),
+      titleInputTokens: usage?.inputTokens,
+      titleOutputTokens: usage?.outputTokens,
+      titleCost: cost,
+    }).where(eq(sessions.id, sessionId)).run();
   } catch {
-    
+    // Title generation failing must never break the chat
   }
 }
