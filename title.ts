@@ -1,5 +1,5 @@
 import { streamText, type ModelMessage } from "ai";
-import { model } from "./provider";
+import { model, DEFAULT_MODEL_ID } from "./provider";
 import { getRate, calculateCostMicros } from "./pricing";
 import { db } from "./db";
 import { sessions } from "./db/schema";
@@ -21,7 +21,7 @@ export async function generateSessionTitle(sessionId: string, firstMessage: stri
     const cleanTitle = generatedTitle.trim().replace(/^["']|["']$/g, "").slice(0, 50);
 
     const usage = await titleResult.usage;
-    const rate = usage ? await getRate("openai/gpt-4o-mini") : null; // current fixed model, until /model lands
+    const rate = usage ? await getRate(DEFAULT_MODEL_ID) : null; // fixed model, on purpose — title cost stays predictable even after /model switches
     const cost = rate && usage ? calculateCostMicros(rate, usage.inputTokens ?? 0, usage.outputTokens ?? 0) : undefined;
 
     db.update(sessions).set({

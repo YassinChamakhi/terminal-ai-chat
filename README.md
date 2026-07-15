@@ -55,9 +55,18 @@ After each response, input/output tokens and cost are shown inline:
 If pricing can't be resolved (network issue, unknown model), `cost` is stored as `NULL` rather than `0` — an unknown cost should never be recorded as a free one. Each assistant message also stores which `model` generated it, so cost can later be broken down per model once `/model` switching is added.
 
 ## Future Updates
-
-- [ ] `/model` switching — per-message `model` field is already tracked in preparation
-- [ ] Per-model cost breakdown, once switching lands
+ 
+- [x] `/model` switching — see "Switching Models" below
+- [ ] Second free-tier provider (Groq or Cerebras) — separate rate-limit pool from OpenRouter's free tier
 - [ ] Terminal UI overhaul
 - [ ] Conversation search
 - [ ] Context window management for long sessions (currently the full message history is replayed every turn, with no truncation or summarization)
+
+
+## Switching Models
+
+Type `/model` mid-conversation to change which model answers: a numbered list of curated models (default, free, and premium options across OpenAI, Anthropic, Google, and DeepSeek), an option to type any exact OpenRouter model ID, or an option to back out and keep the current one.
+
+The Free option automatically falls back across 3 candidate models if the first is rate-limited — handled server-side by OpenRouter, no manual retry needed. The model actually used is shown in the per-message cost line and stored per-message in the database.
+
+Switching is sticky for the rest of the session and does not persist across sessions — exiting and running `continue` resets to the default model.
