@@ -22,7 +22,6 @@ The database (`chat.db`) is created automatically on first run.
 ```bash
 bun run chat.ts             # start a new session
 bun run chat.ts continue    # resume the most recent session
-bun run chat.ts use <id>    # resume a specific session by id
 bun run chat.ts sessions    # list recent sessions
 ```
 

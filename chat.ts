@@ -56,13 +56,6 @@ async function main() {
       } else {
         sessionId = mostrecent.id;
       }
-    } else if (args[0] === "use" && args[1]) {
-      const target = getSession(args[1]);
-      if (!target) {
-        console.log(chalk.red(`No session found with id: ${args[1]}`));
-        return;
-      }
-      sessionId = target.id;
     } else if (args[0] === "sessions") {
       const all = listSessions(10);
       console.log(chalk.cyan.bold("\nRecent sessions:\n"));
