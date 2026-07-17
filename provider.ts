@@ -41,7 +41,8 @@ export const CURATED_MODELS: CuratedModel[] = [
   // DEFAULT
   { id: DEFAULT_MODEL_ID, label: "GPT-4o Mini (Default)" },
   // FREE
-  { id: FREE_TIER_ID, label: "OpenRouter Free (auto-fallback, lower quality)" },  // PREMIUM
+  { id: FREE_TIER_ID, label: "OpenRouter Free (auto-fallback, lower quality)" },  
+  // PREMIUM
   { id: "openai/gpt-5.5", label: "GPT-5.5 (Premium)" },
   { id: "anthropic/claude-opus-4.8", label: "Claude Opus 4.8 (Premium)" },
   { id: "google/gemini-3.1-pro-preview", label: "Gemini 3.1 Pro (Premium)" },

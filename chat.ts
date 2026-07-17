@@ -12,6 +12,8 @@ import {
   markOrphanedInterrupted,
 } from "./db/queries";
 import { generateSessionTitle } from "./title";
+import { commandRegistry } from "./commands/registry";
+import type { CommandContext } from "./commands/types";
 
 const SYSTEM_PROMPT = "You are a helpful, concise terminal assistant.";
 
@@ -24,52 +26,6 @@ process.on("unhandledRejection", (reason) => {
   console.log(chalk.red(`\n[Unhandled rejection: ${reason instanceof Error ? reason.message : String(reason)}]\n`));
 });
 
-// Shows the picker, lets the user pick a curated model, type a custom one, or back out.
-// Regenerated fresh every call so "(current)" is always accurate.
-async function handleModelCommand(currentModelId: string): Promise<string> {
-  console.log(chalk.cyan.bold("\nSelect a model:\n"));
-  CURATED_MODELS.forEach((m, i) => {
-    const marker = m.id === currentModelId ? chalk.green(" (current)") : "";
-    console.log(`${i + 1}. ${m.label}${marker}`);
-  });
-  const typeOption = CURATED_MODELS.length + 1;
-  const backOption = CURATED_MODELS.length + 2;
-  console.log(`${typeOption}. Type a model name you know (exact OpenRouter slug)`);
-  console.log(`${backOption}. Back (keep current)\n`);
-
-  const choice = prompt(chalk.cyan("Pick a number: "));
-  const index = parseInt((choice ?? "").trim(), 10);
-
-  if (!choice || Number.isNaN(index) || index === backOption) {
-    console.log(chalk.yellow(`\nKept current model: ${currentModelId}\n`));
-    return currentModelId;
-  }
-
-  if (index === typeOption) {
-    const typed = (prompt(chalk.cyan("Model id (exact OpenRouter slug): ")) ?? "").trim();
-    if (!typed) {
-      console.log(chalk.yellow(`\nNo input, keeping current model: ${currentModelId}\n`));
-      return currentModelId;
-    }
-    // Reuses the same cache pricing.ts already fetches — no second network call.
-    const rate = await getRate(typed);
-    if (!rate) {
-      console.log(chalk.red(`\n"${typed}" was not found on OpenRouter. Keeping ${currentModelId}. Run /model again to retry.\n`));
-      return currentModelId;
-    }
-    console.log(chalk.green(`\nSwitched to ${typed}\n`));
-    return typed;
-  }
-
-  const picked = CURATED_MODELS[index - 1];
-  if (!picked) {
-    console.log(chalk.red(`\nInvalid selection, keeping current model: ${currentModelId}\n`));
-    return currentModelId;
-  }
-
-  console.log(chalk.green(`\nSwitched to ${picked.label} (${picked.id})\n`));
-  return picked.id;
-}
 
 async function main() {
 
@@ -136,7 +92,7 @@ async function main() {
   }
 
   const dbMessages = getMessages(sessionId);
-  const messages: ModelMessage[] = dbMessages.map((m) => ({
+  let messages: ModelMessage[] = dbMessages.map((m) => ({
     role: m.role as "user" | "assistant",
     content: m.content,
   }));
@@ -150,10 +106,31 @@ async function main() {
       break;
     }
 
-    if (userInput.trim() === "/model") {
-      currentModelId = await handleModelCommand(currentModelId);
-      currentModel = getModel(currentModelId);
-      continue; // never reaches addMessage/streamText — command, not a chat turn
+    const trimmed = userInput.trim();
+    if (trimmed.startsWith("/")) {
+      const [rawCmd, ...rest] = trimmed.split(" ");
+      if (!rawCmd) {
+        continue; // shouldn't happen since trimmed starts with "/", but satisfies TS
+      }
+      const command = commandRegistry.find(c => c.name === rawCmd.toLowerCase());
+      if (!command) {
+        console.log(chalk.red(`\nUnknown command: ${rawCmd}. Type /help for available commands.\n`));
+        continue;
+      }
+      const ctx: CommandContext = { sessionId, messages, currentModelId, isNewChat, titleGenerated };
+      try {
+        const result = await command.handler(rest.join(" "), ctx);
+        sessionId = ctx.sessionId;
+        messages = ctx.messages;
+        currentModelId = ctx.currentModelId;
+        isNewChat = ctx.isNewChat;
+        titleGenerated = ctx.titleGenerated;
+        currentModel = getModel(currentModelId);
+        if (result === "exit") break;
+      } catch (err) {
+        console.log(chalk.red(`\n[Command failed: ${err instanceof Error ? err.message : String(err)}]\n`));
+      }
+      continue;
     }
 
     try {

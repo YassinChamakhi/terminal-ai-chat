@@ -70,3 +70,14 @@ Type `/model` mid-conversation to change which model answers: a numbered list of
 The Free option automatically falls back across 3 candidate models if the first is rate-limited — handled server-side by OpenRouter, no manual retry needed. The model actually used is shown in the per-message cost line and stored per-message in the database.
 
 Switching is sticky for the rest of the session and does not persist across sessions — exiting and running `continue` resets to the default model.
+
+## Commands
+
+Type `/help` anytime to see this list in the app.
+
+- `/model` — switch which model answers (curated picker, custom slug entry, or back out)
+- `/sessions` — list your 10 most recent sessions
+- `/new [name]` — start a fresh session without exiting
+- `/continue [id]` — resume your most recent session, or switch to a specific one by id
+- `/exit` — end the session
+- `/help` — show this command list
