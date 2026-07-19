@@ -1,6 +1,6 @@
 import { db } from "./index";
 import { sessions, messages } from "./schema";
-import { eq, desc, isNull } from "drizzle-orm";
+import { eq, desc, asc, isNull } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 // ── Sessions ──────────────────────────────
@@ -32,7 +32,7 @@ export function touchSession(id: string) {
 // ── Messages ──────────────────────────────
 
 export function getMessages(sessionId: string) {
-  return db.select().from(messages).where(eq(messages.sessionId, sessionId)).all();
+  return db.select().from(messages).where(eq(messages.sessionId, sessionId)).orderBy(asc(messages.createdAt)).all();
 }
 
 export function addMessage(sessionId: string, role: string, content: string): string {
